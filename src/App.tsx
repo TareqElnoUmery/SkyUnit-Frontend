@@ -1,5 +1,4 @@
-39
-  import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 
 interface Project {
@@ -100,7 +99,6 @@ function App() {
     });
   };
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('skyunit_user');
     if (savedUser) {
@@ -111,6 +109,37 @@ function App() {
 
   return (
     <div className="app">
+      {/* Maintenance Page */}
+      {currentPage === 'maintenance' && (
+        <div className="maintenance-container">
+          <div className="maintenance-background"></div>
+          <div className="maintenance-overlay"></div>
+          <div className="maintenance-content">
+            <div className="maintenance-header">
+              <h1 className="maintenance-title">جارٍ تحديث منصّة SkyUnit</h1>
+              <p className="maintenance-subtitle">منصّة SkyUnit بتخضع الآن لتحديثات مهمّة علشان نقدّم لكم أفضل تجربة حجز عقاري مدعومة بالذكاء الاصطناعي.</p>
+            </div>
+
+            <div className="maintenance-loader">
+              <div className="loader-dot"></div>
+              <div className="loader-dot"></div>
+              <div className="loader-dot"></div>
+            </div>
+
+            <div className="maintenance-message">
+              <p className="message-primary">سيتم الانتهاء من التحديث وعودة الموقع للعمل خلال الساعات القادمة</p>
+              <p className="message-secondary">شكرًا لثقتكم وصبركم معنا</p>
+            </div>
+
+            <div className="maintenance-features">
+              <p className="feature-item">🌟 المنصة العقارية الأحدث في مصر</p>
+              <p className="feature-item">⚡ بتقنيات عالمية من أقوى شركات البرمجة</p>
+              <p className="feature-item">✨ قريباً..البدء في تجربة فريدة</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Landing Page */}
       {currentPage === 'landing' && (
         <div className="landing-page">
@@ -118,7 +147,6 @@ function App() {
             <h1>SkyUnit - منصة حجز العقارات</h1>
             <p>اختر منصتك المفضلة وابدأ رحلتك في البحث عن العقار المثالي</p>
           </header>
-
           <main className="main">
             <section className="projects-grid">
               {PROJECTS.map(project => (
@@ -136,7 +164,6 @@ function App() {
               ))}
             </section>
           </main>
-
           <footer className="footer">
             <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
           </footer>
@@ -150,7 +177,6 @@ function App() {
             <button className="btn-back" onClick={() => setCurrentPage('landing')}>← رجوع</button>
             <h1>إنشاء حساب في {selectedProject.name}</h1>
           </header>
-
           <main className="main">
             <div className="register-container">
               <div className="project-info">
@@ -158,7 +184,6 @@ function App() {
                 <h2>{selectedProject.name}</h2>
                 <p className="info-text">ملاحظة: حسابك سيكون مرتبطاً بمنصة {selectedProject.name} وستتمكن من عرض عروضهم الخاصة والحجز المباشر معهم.</p>
               </div>
-
               <form className="register-form" onSubmit={handleRegister}>
                 <div className="form-group">
                   <label>الاسم الكامل *</label>
@@ -171,7 +196,6 @@ function App() {
                     required
                   />
                 </div>
-
                 <div className="form-group">
                   <label>البريد الإلكتروني *</label>
                   <input
@@ -183,7 +207,6 @@ function App() {
                     required
                   />
                 </div>
-
                 <div className="form-group">
                   <label>رقم الهاتف *</label>
                   <input
@@ -195,7 +218,6 @@ function App() {
                     required
                   />
                 </div>
-
                 <div className="form-group">
                   <label>كلمة المرور *</label>
                   <input
@@ -207,7 +229,6 @@ function App() {
                     required
                   />
                 </div>
-
                 <div className="form-group">
                   <label>تأكيد كلمة المرور *</label>
                   <input
@@ -219,14 +240,12 @@ function App() {
                     required
                   />
                 </div>
-
                 <button type="submit" className="btn-register">
                   إنشاء حساب
                 </button>
               </form>
             </div>
           </main>
-
           <footer className="footer">
             <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
           </footer>
@@ -245,7 +264,6 @@ function App() {
               تسجيل الخروج
             </button>
           </header>
-
           <main className="main dashboard-main">
             <div className="user-info-card">
               <h2>بيانات الحساب</h2>
@@ -270,7 +288,6 @@ function App() {
                 <span className="value">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</span>
               </div>
             </div>
-
             <div className="features-card">
               <h2>الميزات المتاحة</h2>
               <ul className="features-list">
@@ -282,80 +299,11 @@ function App() {
               </ul>
             </div>
           </main>
-
           <footer className="footer">
             <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
           </footer>
         </div>
       )}
-      
-    /* Maintenance Page */
-    }
-    {currentPage === 'maintenance' && (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-      }}>
-        <div style={{
-          textAlign: 'center',
-          color: 'white',
-          padding: '40px',
-          maxWidth: '600px'
-        }}>
-          <div style={{
-            fontSize: '80px',
-            marginBottom: '20px',
-            animation: 'pulse 2s infinite'
-          }}>🚀</div>
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: 'bold',
-            marginBottom: '10px',
-            letterSpacing: '1px'
-          }}>تطوير وتحديث SkyUnit</h1>
-          <p style={{
-            fontSize: '18px',
-            marginBottom: '30px',
-            opacity: '0.95',
-            lineHeight: '1.6'
-          }}>ترسانة الحجز النووية بنظام الأسبقية</p>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '15px',
-            marginBottom: '40px'
-          }}>
-            <div style={{width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.7)', animation: 'pulse 1s infinite'}} />
-            <div style={{width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.7)', animation: 'pulse 1.2s infinite'}} />
-            <div style={{width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.7)', animation: 'pulse 1.4s infinite'}} />
-          </div>
-          <div style={{
-            fontSize: '16px',
-            marginBottom: '20px',
-            color: '#e0e0e0'
-          }}>
-            <p style={{ marginBottom: '15px', fontWeight: '500' }}>شكرًا لدعمكم…</p>
-            <p style={{ fontSize: '17px', fontWeight: '600', color: '#fff' }}>ونوعدكم بتجربة حجز مختلفة تماما</p>
-          </div>
-          <div style={{
-            marginTop: '40px',
-            paddingTop: '30px',
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            fontSize: '14px',
-            color: 'rgba(255,255,255,0.8)'
-          }}>
-            <p style={{ marginBottom: '8px' }}>🌟 المنصة العقارية الأحدث في مصر</p>
-            <p style={{ marginBottom: '8px' }}>⚡ بتقنيات عالمية من أقوى شركات البرمجة</p>
-            <p>✨ قريباً..البدء في تجربة فريدة</p>
-          </div>
-          <style>{`@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }`}</style>
-        </div>
-      </div>
-    )
     </div>
   );
 }
