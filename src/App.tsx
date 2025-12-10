@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './index.css'
+/// <reference types="vite/client" />
 
 interface Property {
   id: string
