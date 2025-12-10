@@ -1,101 +1,294 @@
-import React, { useState, useEffect } from 'react'
-import './index.css'
+import React, { useState, useEffect } from 'react';
+import './index.css';
 
-interface Property {
-  id: string
-  title: string
-  price: number
-  location: string
-  image: string
+interface Project {
+  id: string;
+  name: string;
+  logo?: string;
+  description: string;
 }
+
+const PROJECTS: Project[] = [
+  {
+    id: 'baitk-misr',
+    name: 'بيتك في مصر',
+    description: 'منصة متخصصة في العقارات السكنية بأسعار مميزة',
+    logo: '🏠'
+  },
+  {
+    id: 'misr-real-estate',
+    name: 'مصر العقارية',
+    description: 'أكبر منصة عقارية مصرية للعقارات الفاخرة',
+    logo: '🏢'
+  },
+  {
+    id: 'nile-properties',
+    name: 'نيل للعقارات',
+    description: 'منصة متخصصة في العقارات التجارية والسكنية',
+    logo: '🌊'
+  }
+];
 
 function App() {
-  const [properties, setProperties] = useState<Property[]>([])
-  const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'dashboard'>('landing');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const response = await fetch('https://skyunit-backend-api-production.up.railway.app/api/properties')
-        const data = await response.json()
-        setProperties(data || [])
-      } catch (error) {
-        console.error('Error fetching properties:', error)
-        setProperties([
-          {
-            id: '1',
-            title: 'Luxury Villa Dubai',
-            price: 2500000,
-            location: 'Dubai Marina',
-            image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=500',
-          },
-          {
-            id: '2',
-            title: 'Modern Apartment Cairo',
-            price: 450000,
-            location: 'New Cairo',
-            image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500',
-          },
-          {
-            id: '3',
-            title: 'Beach House Alexandria',
-            price: 1200000,
-            location: 'Alexandria Coast',
-            image: 'https://images.unsplash.com/photo-1500382017468-7049fae79241?w=500',
-          },
-        ])
-      } finally {
-        setLoading(false)
-      }
+  const handleProjectSelect = (project: Project) => {
+    setSelectedProject(project);
+    setCurrentPage('register');
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
+      alert('الرجاء ملء جميع الحقول');
+      return;
     }
-    fetchProperties()
-  }, [])
+
+    if (formData.password !== formData.confirmPassword) {
+      alert('كلمات المرور غير متطابقة');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      return;
+    }
+
+    const userData = {
+      id: Date.now(),
+      ...formData,
+      projectId: selectedProject?.id,
+      projectName: selectedProject?.name,
+      createdAt: new Date().toISOString()
+    };
+
+    localStorage.setItem('skyunit_user', JSON.stringify(userData));
+    setUser(userData);
+    setCurrentPage('dashboard');
+    alert(`تم إنشاء حسابك بنجاح! مرحباً بك في ${selectedProject?.name}`);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('skyunit_user');
+    setUser(null);
+    setCurrentPage('landing');
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
+  // Check if user is logged in on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('skyunit_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setCurrentPage('dashboard');
+    }
+  }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <header className="bg-white shadow-lg py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold text-gray-900">SkyUnit Frontend</h1>
-          <p className="text-gray-600 mt-2">منصة متقدمة لحجز العقارات</p>
-          <p className="text-gray-600">Professional Real Estate Booking Platform</p>
-        </div>
-      </header>
+    <div className="app">
+      {/* Landing Page */}
+      {currentPage === 'landing' && (
+        <div className="landing-page">
+          <header className="header">
+            <h1>SkyUnit - منصة حجز العقارات</h1>
+            <p>اختر منصتك المفضلة وابدأ رحلتك في البحث عن العقار المثالي</p>
+          </header>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-12 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-600">جاري تحميل العقارات...</p>
-            </div>
-          ) : properties.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-600">لا توجد عقارات متاحة</p>
-            </div>
-          ) : (
-            properties.map((property) => (
-              <div key={property.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <img src={property.image} alt={property.title} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-indigo-600 mb-2">{property.title}</h3>
-                  <p className="text-gray-600 mb-2">📍 {property.location}</p>
-                  <p className="text-2xl font-bold text-gray-900 mb-4">EGP {property.price.toLocaleString()}</p>
-                  <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
-                    احجز الآن | Book Now
+          <main className="main">
+            <section className="projects-grid">
+              {PROJECTS.map(project => (
+                <div key={project.id} className="project-card">
+                  <div className="project-logo">{project.logo}</div>
+                  <h2>{project.name}</h2>
+                  <p>{project.description}</p>
+                  <button 
+                    className="btn-select-project"
+                    onClick={() => handleProjectSelect(project)}
+                  >
+                    ابدأ الآن
                   </button>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </main>
+              ))}
+            </section>
+          </main>
 
-      <footer className="bg-gray-800 text-white py-8 mt-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p>&copy; 2025 SkyUnit - منصة الحجز الذكي</p>
+          <footer className="footer">
+            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
+          </footer>
         </div>
-      </footer>
+      )}
+
+      {/* Registration Page */}
+      {currentPage === 'register' && selectedProject && (
+        <div className="register-page">
+          <header className="header">
+            <button className="btn-back" onClick={() => setCurrentPage('landing')}>← رجوع</button>
+            <h1>إنشاء حساب في {selectedProject.name}</h1>
+          </header>
+
+          <main className="main">
+            <div className="register-container">
+              <div className="project-info">
+                <div className="project-badge">{selectedProject.logo}</div>
+                <h2>{selectedProject.name}</h2>
+                <p className="info-text">ملاحظة: حسابك سيكون مرتبطاً بمنصة {selectedProject.name} وستتمكن من عرض عروضهم الخاصة والحجز المباشر معهم.</p>
+              </div>
+
+              <form className="register-form" onSubmit={handleRegister}>
+                <div className="form-group">
+                  <label>الاسم الكامل *</label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    placeholder="أدخل اسمك الكامل"
+                    value={formData.fullName}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>البريد الإلكتروني *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="example@email.com"
+                    value={formData.email}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>رقم الهاتف *</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="01xxxxxxxxx"
+                    value={formData.phone}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>كلمة المرور *</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="أدخل كلمة مرور قوية (6 أحرف على الأقل)"
+                    value={formData.password}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>تأكيد كلمة المرور *</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="أعد إدخال كلمة المرور"
+                    value={formData.confirmPassword}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn-register">
+                  إنشاء حساب
+                </button>
+              </form>
+            </div>
+          </main>
+
+          <footer className="footer">
+            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
+          </footer>
+        </div>
+      )}
+
+      {/* Dashboard Page */}
+      {currentPage === 'dashboard' && user && (
+        <div className="dashboard-page">
+          <header className="header dashboard-header">
+            <div className="header-left">
+              <h1>مرحباً، {user.fullName}</h1>
+              <p className="subtitle">حسابك في {user.projectName}</p>
+            </div>
+            <button className="btn-logout" onClick={handleLogout}>
+              تسجيل الخروج
+            </button>
+          </header>
+
+          <main className="main dashboard-main">
+            <div className="user-info-card">
+              <h2>بيانات الحساب</h2>
+              <div className="info-row">
+                <span className="label">الاسم:</span>
+                <span className="value">{user.fullName}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">البريد الإلكتروني:</span>
+                <span className="value">{user.email}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">رقم الهاتف:</span>
+                <span className="value">{user.phone}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">المنصة:</span>
+                <span className="value">{user.projectName}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">تاريخ الإنشاء:</span>
+                <span className="value">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</span>
+              </div>
+            </div>
+
+            <div className="features-card">
+              <h2>الميزات المتاحة</h2>
+              <ul className="features-list">
+                <li>✓ عرض جميع العقارات المتاحة في {user.projectName}</li>
+                <li>✓ الحجز المباشر للعقارات</li>
+                <li>✓ متابعة طلبات الحجز الخاصة بك</li>
+                <li>✓ الحصول على عروض حصرية</li>
+                <li>✓ التواصل المباشر مع المستشارين</li>
+              </ul>
+            </div>
+          </main>
+
+          <footer className="footer">
+            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
+          </footer>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
