@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import PropertyCarousel from './PropertyCarousel';
+import './PropertyCarousel.css';
 import './index.css';
 
 interface Project {
@@ -143,6 +145,7 @@ function App() {
       {/* Landing Page */}
       {currentPage === 'landing' && (
         <div className="landing-page">
+                    <PropertyCarousel />
           <header className="header">
             <h1>SkyUnit - منصة حجز العقارات</h1>
             <p>اختر منصتك المفضلة وابدأ رحلتك في البحث عن العقار المثالي</p>
