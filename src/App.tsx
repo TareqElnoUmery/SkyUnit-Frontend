@@ -30,7 +30,7 @@ const PROJECTS: Project[] = [
 ];
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'maintenance' | 'landing' | 'register' | 'dashboard'>('maintenance');
+  const [currentPage, setCurrentPage] = useState<'maintenance' | 'landing' | 'register' | 'dashboard'>('landing');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
