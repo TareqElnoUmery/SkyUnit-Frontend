@@ -1,24 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SkyUnit - Real Estate Booking Platform</title>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyUnit — منصة العقارات الذكية</title>
+  
+  <!-- OneSignal SDK for Push Notifications -->
+  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+  
+  <!-- Mapbox CSS for Map Integration -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.18.0/mapbox-gl.css" rel="stylesheet" />
+  
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Animate.css for Smooth Animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  
+  <link rel="stylesheet" href="styles.css" />
+  
+  <script>
+    // Configuration for external services
+    window.SKYUNIT_CONFIG = {
+      perplexityApiKey: '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',
+      mapboxToken: 'YOUR_MAPBOX_TOKEN_HERE',
+      crispWebsiteId: 'YOUR_CRISP_WEBSITE_ID_HERE',
+      supabaseUrl: 'https://ygawursuyevlmwbuvquw.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+    };
+  </script>
+</head>
+<body dir="rtl">
+  <div class="su-container">
+    <!-- Sidebar Navigation -->
+    <aside class="su-sidebar">
+      <div class="su-logo">
+        <h1>🏢 SkyUnit</h1>
+        <p>منصة العقارات الذكية</p>
+      </div>
+      
+      <nav class="su-nav">
+        <button class="nav-item active" data-section="dashboard">
+          <i class="fas fa-home"></i> لوحة التحكم
+        </button>
+        <button class="nav-item" data-section="ai-assistant">
+          <i class="fas fa-robot"></i> المساعد الذكي
+        </button>
+        <button class="nav-item" data-section="map">
+          <i class="fas fa-map-location-dot"></i> الخريطة
+        </button>
+        <button class="nav-item" data-section="recommendations">
+          <i class="fas fa-lightbulb"></i> التوصيات
+        </button>
+        <button class="nav-item" data-section="notifications">
+          <i class="fas fa-bell"></i> الإشعارات
+        </button>
+      </nav>
+      
+      <div class="su-footer-btn">
+        <button id="notify-perm-btn" class="btn btn-primary">
+          <i class="fas fa-bell-slash"></i> تفعيل الإشعارات
+        </button>
+      </div>
+    </aside>
     
-    <!-- OneSignal Push Notifications -->
-    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
-    <script>
-      window.OneSignal = window.OneSignal || [];
-      OneSignal.push(function() {
-        OneSignal.init({
-          appId: "YOUR-APP-ID"
-        });
-      });
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <!-- Main Content Area -->
+    <main class="su-main">
+      <!-- Dashboard Section -->
+      <section class="su-section active" id="dashboard-section">
+        <h2>لوحة التحكم</h2>
+        <div class="dashboard-grid">
+          <div class="card">
+            <h3>العقارات المتاحة</h3>
+            <p class="stat-number" id="available-properties">0</p>
+            <p class="stat-label">عقار</p>
+          </div>
+          <div class="card">
+            <h3>حجوزاتك</h3>
+            <p class="stat-number" id="user-bookings">0</p>
+            <p class="stat-label">حجز</p>
+          </div>
+          <div class="card">
+            <h3>رصيد الخدمات</h3>
+            <p class="stat-number" id="user-credit">0</p>
+            <p class="stat-label">نقطة</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- AI Assistant Section -->
+      <section class="su-section" id="ai-section">
+        <h2>🤖 المساعد الذكي</h2>
+        <p class="section-desc">مساعد ذكي يدعم العربية والعامية المصرية، يتعلم من تفاعلاتك لتقديم توصيات أفضل</p>
+        
+        <div class="ai-container">
+          <div class="chat-window" id="chat-window"></div>
+          <form class="chat-form" id="chat-form">
+            <input 
+              id="chat-input" 
+              type="text" 
+              placeholder="اسأل عن عقار، حجز، أسعار، أو أي استفسار... (يدعم العامية المصرية)"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn btn-send">
+              <i class="fas fa-paper-plane"></i> أرسل
+            </button>
+          </form>
+          <div class="ai-info">
+            <p>💡 المساعد يحفظ سجل محادثاتك ويتعلم من تفضيلاتك</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Map Section -->
+      <section class="su-section" id="map-section">
+        <h2>🗺️ خريطة المشاريع</h2>
+        <p class="section-desc">عرض تفاعلي لجميع العقارات على الخريطة مع تفاصيل كاملة</p>
+        
+        <div class="map-container">
+          <div id="map" class="map"></div>
+          <div class="map-legend">
+            <p><span class="legend-villa"></span> فيلا</p>
+            <p><span class="legend-apartment"></span> شقة</p>
+            <p><span class="legend-house"></span> بيت</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Recommendations Section -->
+      <section class="su-section" id="recommendations-section">
+        <h2>💡 التوصيات الذكية</h2>
+        <p class="section-desc">توصيات مخصصة بناءً على تاريخ البحث والحجوزات</p>
+        
+        <div class="recommendations-container" id="recommendations-grid"></div>
+        <div class="empty-state" id="empty-recommendations">
+          <i class="fas fa-search"></i>
+          <p>لم يتم العثور على توصيات بعد. ابدأ بالبحث عن عقارات!</p>
+        </div>
+      </section>
+      
+      <!-- Notifications Section -->
+      <section class="su-section" id="notifications-section">
+        <h2>📬 الإشعارات</h2>
+        <p class="section-desc">تفعيل الإشعارات للحصول على تحديثات فورية</p>
+        
+        <div class="notifications-panel">
+          <div class="notification-item">
+            <input type="checkbox" id="notify-new-properties" checked />
+            <label for="notify-new-properties">إشعار عند إضافة عقارات جديدة</label>
+          </div>
+          <div class="notification-item">
+            <input type="checkbox" id="notify-price-drop" checked />
+            <label for="notify-price-drop">إشعار عند خفض الأسعار</label>
+          </div>
+          <div class="notification-item">
+            <input type="checkbox" id="notify-bookings" checked />
+            <label for="notify-bookings">إشعار تحديثات الحجوزات</label>
+          </div>
+          <button class="btn btn-primary" id="save-notifications">حفظ الإعدادات</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <!-- Mapbox GL JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.18.0/mapbox-gl.js"></script>
+  
+  <!-- Crisp Chat Widget -->
+  <script type="text/javascript">
+    window.$crisp=[];
+    window.CRISP_WEBSITE_ID="YOUR_CRISP_ID_HERE";
+    (function(){
+      d=document;s=d.createElement("script");
+      s.src="https://client.crisp.chat/l.js";s.async=1;
+      d.getElementsByTagName("head")[0].appendChild(s);
+    })();
+  </script>
+  
+  <!-- Main Application Scripts -->
+  <script src="app.js"></script>
+  <script src="ai-assistant.js"></script>
+  <script src="map-integration.js"></script>
+  <script src="recommendations.js"></script>
+  <script src="notifications.js"></script>
+  
+</body>
 </html>
