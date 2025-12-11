@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import gsap from 'gsap';
+import React, { useState, useRef } from 'react';
 
 interface Property {
   id: string;
@@ -78,14 +77,6 @@ const PropertyCarousel: React.FC = () => {
     let newIndex = currentIndex + (direction === 'right' ? 1 : -1);
     if (newIndex < 0) newIndex = properties.length - 1;
     if (newIndex >= properties.length) newIndex = 0;
-    
-    if (trackRef.current) {
-      const cards = trackRef.current.querySelectorAll('.property-card');
-      gsap.to(cards[newIndex], {
-        opacity: 1,
-        duration: 0.5
-      });
-    }
     setCurrentIndex(newIndex);
   };
 
@@ -95,7 +86,6 @@ const PropertyCarousel: React.FC = () => {
         <p className="carousel-subtitle">عقارات حديثة ومتميزة</p>
         <h2 className="carousel-title">ما رأيك في مشاريعنا؟</h2>
       </div>
-
       <div className="slider-container" ref={containerRef}>
         <div className="slider-track" ref={trackRef}>
           {properties.map((property, index) => (
@@ -112,7 +102,6 @@ const PropertyCarousel: React.FC = () => {
           ))}
         </div>
       </div>
-
       {selectedProperty && (
         <>
           <button className="close-btn" onClick={handleClose}>
