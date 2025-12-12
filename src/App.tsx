@@ -1,321 +1,153 @@
-import React, { useState, useEffect } from 'react';
-// Updated with Hero Section & AI Features
+'use client';
 
-/**
- * ✨ HERO SECTION - تم إضافتها الآن 🎉
- * Welcome to SkyUnit - The Intelligent Real Estate Platform
- * منصة سكاي يونت الذكية للعقارات
- */
-import PropertyCarousel from './PropertyCarousel';
-import './PropertyCarousel.css';
-import './index.css';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Float, Text3D, Center } from '@react-three/drei';
+import { EffectComposer, Bloom, ChromaticAberration, Glitch } from '@react-three/postprocessing';
+import { GlitchMode } from 'postprocessing';
 
-interface Project {
-  id: string;
-  name: string;
-  logo?: string;
-  description: string;
-}
+export default function SkyUnit() {
+  const [entered, setEntered] = useState(false);
+  const [shattering, setShattering] = useState(false);
 
-const PROJECTS: Project[] = [
-  {
-    id: 'baitk-misr',
-    name: 'بيتك في مصر',
-    description: 'منصة متخصصة في العقارات السكنية بأسعار مميزة',
-    logo: '🏠'
-  },
-  {
-    id: 'misr-real-estate',
-    name: 'مصر العقارية',
-    description: 'أكبر منصة عقارية مصرية للعقارات الفاخرة',
-    logo: '🏢'
-  },
-  {
-    id: 'nile-properties',
-    name: 'نيل للعقارات',
-    description: 'منصة متخصصة في العقارات التجارية والسكنية',
-    logo: '🌊'
-  }
-];
-
-function App() {
-  const [currentPage, setCurrentPage] = useState<'maintenance' | 'landing' | 'register' | 'dashboard'>('landing');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [user, setUser] = useState<any>(null);
-
-  const handleProjectSelect = (project: Project) => {
-    setSelectedProject(project);
-    setCurrentPage('register');
+  const handleEnter = () => {
+    setShattering(true);
+    setTimeout(() => {
+      setEntered(true);
+      setShattering(false);
+    }, 3200);
   };
-
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
-      alert('الرجاء ملء جميع الحقول');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      alert('كلمات المرور غير متطابقة');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-      return;
-    }
-
-    const userData = {
-      id: Date.now(),
-      ...formData,
-      projectId: selectedProject?.id,
-      projectName: selectedProject?.name,
-      createdAt: new Date().toISOString()
-    };
-
-    localStorage.setItem('skyunit_user', JSON.stringify(userData));
-    setUser(userData);
-    setCurrentPage('dashboard');
-    alert(`تم إنشاء حسابك بنجاح! مرحباً بك في ${selectedProject?.name}`);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('skyunit_user');
-    setUser(null);
-    setCurrentPage('landing');
-    setFormData({
-      fullName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: ''
-    });
-  };
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('skyunit_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setCurrentPage('dashboard');
-    }
-  }, []);
 
   return (
-    <div className="app">
-      {/* Maintenance Page */}
-      {currentPage === 'maintenance' && (
-        <div className="maintenance-container">
-          <div className="maintenance-background"></div>
-          <div className="maintenance-overlay"></div>
-          <div className="maintenance-content">
-            <div className="maintenance-header">
-              <h1 className="maintenance-title">جارٍ تحديث منصّة SkyUnit</h1>
-              <p className="maintenance-subtitle">منصّة SkyUnit بتخضع الآن لتحديثات مهمّة علشان نقدّم لكم أفضل تجربة حجز عقاري مدعومة بالذكاء الاصطناعي.</p>
-            </div>
+    <>
+      <div className="fixed inset-0 bg-black text-white overflow-hidden font-orbitron">
+        <AnimatePresence mode="wait">
+          {!entered ? (
+            /* ============ REAL WORLD SCREEN ============ */
+            <motion.div
+              key="realworld"
+              className="fixed inset-0 bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center gap-16 z-50"
+              exit={{ opacity: 0 }}
+            >
+              <h1 className="text-6xl font-thin tracking-widest text-gray-600">SkyUnit</h1>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleEnter}
+                className="px-20 py-10 bg-cyan-500 text-black text-4xl font-bold rounded-3xl shadow-2xl shadow-cyan-500/50 hover:bg-cyan-400 transition-all"
+              >
+                ENTER SKYUNIT
+              </motion.button>
+            </motion.div>
+          ) : (
+            /* ============ DIGITAL VOID - SKYUNIT OS ============ */
+            <div className="relative w-full h-screen">
+              {/* Reality Shatter Effect */}
+              {shattering && (
+                <motion.div
+                  initial={{ clipPath: "circle(0% at 50% 50%)" }}
+                  animate={{ clipPath: "circle(150% at 50% 50%)" }}
+                  transition={{ duration: 3, ease: "easeInOut" }}
+                  className="fixed inset-0 z-50 pointer-events-none"
+                  style={{
+                    background: "radial-gradient(circle, transparent 40%, #00f2ff 70%)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+              )}
 
-            <div className="maintenance-loader">
-              <div className="loader-dot"></div>
-              <div className="loader-dot"></div>
-              <div className="loader-dot"></div>
-            </div>
+              {/* 3D Scene */}
+              <Canvas camera={{ position: [0, 0, 10], fov: 65 }}>
+                <color attach="background" args={['#000000']} />
+                <ambientLight intensity={0.4} />
+                <pointLight position={[10, 10, 10]} intensity={3} color="#00f2ff" />
+                <pointLight position={[-10, -10, -10]} intensity={2} color="#c41eff" />
 
-            <div className="maintenance-message">
-              <p className="message-primary">سيتم الانتهاء من التحديث وعودة الموقع للعمل خلال الساعات القادمة</p>
-              <p className="message-secondary">شكرًا لثقتكم وصبركم معنا</p>
-            </div>
+                {/* Neural Avatar */}
+                <Float speed={3} rotationIntensity={0.8} floatIntensity={1}>
+                  <mesh>
+                    <torusKnotGeometry args={[1.5, 0.4, 128, 16]} />
+                    <meshStandardMaterial
+                      color="#00f2ff"
+                      emissive="#c41eff"
+                      emissiveIntensity={4}
+                      wireframe
+                      opacity={0.9}
+                      transparent
+                    />
+                  </mesh>
+                </Float>
 
-            <div className="maintenance-features">
-              <p className="feature-item">🌟 المنصة العقارية الأحدث في مصر</p>
-              <p className="feature-item">⚡ بتقنيات عالمية من أقوى شركات البرمجة</p>
-              <p className="feature-item">✨ قريباً..البدء في تجربة فريدة</p>
-            </div>
-          </div>
-        </div>
-      )}
+                {/* Orbital Ring */}
+                <OrbitControls autoRotate autoRotateSpeed={0.5} enableZoom={false} />
+                {[
+                  { name: "NEURAL HUB", color: "#00f2ff" },
+                  { name: "VOID MARKET", color: "#c41eff" },
+                  { name: "SKY FORGE", color: "#ff6a00" },
+                  { name: "PHANTOM REALMS", color: "#00ff9d" },
+                  { name: "DATA VAULT", color: "#ffffff" },
+                  { name: "QUANTUM STREAM", color: "#8a2be2" },
+                  { name: "GRAVITY CORE", color: "#ffd700" },
+                  { name: "ABYSS GATE", color: "#ff0044" },
+                ].map((item, i) => {
+                  const angle = (i / 8) * Math.PI * 2;
+                  return (
+                    <group key={i} position={[Math.cos(angle) * 5, Math.sin(angle) * 5, 0]}>
+                      <mesh>
+                        <boxGeometry args={[1.6, 0.5, 0.3]} />
+                        <meshStandardMaterial color={item.color} emissive={item.color} emissiveIntensity={5} />
+                      </mesh>
+                      <Center position={[0, -0.5, 0.16]}>
+                        <Text3D font="/fonts/orbitron.json" size={0.2} height={0.05}>
+                          {item.name.slice(0, 6)}
+                          <meshStandardMaterial color="white" emissive="white" emissiveIntensity={8} />
+                        </Text3D>
+                      </Center>
+                    </group>
+                  );
+                })}
 
-      {/* Landing Page */}
-      {currentPage === 'landing' && (
-        <div className="landing-page">
-                    <PropertyCarousel />
-          <header className="header">
-            <h1>SkyUnit - منصة حجز العقارات</h1>
-            <p>اختر منصتك المفضلة وابدأ رحلتك في البحث عن العقار المثالي</p>
-          </header>
-          <main className="main">
-            <section className="projects-grid">
-              {PROJECTS.map(project => (
-                <div key={project.id} className="project-card">
-                  <div className="project-logo">{project.logo}</div>
-                  <h2>{project.name}</h2>
-                  <p>{project.description}</p>
-                  <button 
-                    className="btn-select-project"
-                    onClick={() => handleProjectSelect(project)}
-                  >
-                    ابدأ الآن
-                  </button>
-                </div>
-              ))}
-            </section>
-          </main>
-          <footer className="footer">
-            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
-          </footer>
-        </div>
-      )}
+                {/* Post Processing */}
+                <EffectComposer>
+                  <Bloom luminanceThreshold={0.1} luminanceSmoothing={0.9} intensity={2} />
+                  <ChromaticAberration offset={[0.002, 0.002]} />
+                  <Glitch delay={[1.5, 3.5]} duration={[0.6, 1.0]} strength={[0.1, 0.3]} mode={GlitchMode.SPORADIC} />
+                </EffectComposer>
+              </Canvas>
 
-      {/* Registration Page */}
-      {currentPage === 'register' && selectedProject && (
-        <div className="register-page">
-          <header className="header">
-            <button className="btn-back" onClick={() => setCurrentPage('landing')}>← رجوع</button>
-            <h1>إنشاء حساب في {selectedProject.name}</h1>
-          </header>
-          <main className="main">
-            <div className="register-container">
-              <div className="project-info">
-                <div className="project-badge">{selectedProject.logo}</div>
-                <h2>{selectedProject.name}</h2>
-                <p className="info-text">ملاحظة: حسابك سيكون مرتبطاً بمنصة {selectedProject.name} وستتمكن من عرض عروضهم الخاصة والحجز المباشر معهم.</p>
-              </div>
-              <form className="register-form" onSubmit={handleRegister}>
-                <div className="form-group">
-                  <label>الاسم الكامل *</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    placeholder="أدخل اسمك الكامل"
-                    value={formData.fullName}
-                    onChange={handleFormChange}
-                    required
+              {/* Cyber Rain Overlay */}
+              <div className="fixed inset-0 pointer-events-none opacity-20">
+                {[...Array(50)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-px bg-cyan-400"
+                    style={{ left: `${Math.random() * 100}%`, height: "100px" }}
+                    animate={{ y: [0, innerHeight + 100] }}
+                    transition={{ duration: 2 + Math.random() * 3, repeat: Infinity, ease: "linear" }}
                   />
-                </div>
-                <div className="form-group">
-                  <label>البريد الإلكتروني *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="example@email.com"
-                    value={formData.email}
-                    onChange={handleFormChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>رقم الهاتف *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="01xxxxxxxxx"
-                    value={formData.phone}
-                    onChange={handleFormChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>كلمة المرور *</label>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="أدخل كلمة مرور قوية (6 أحرف على الأقل)"
-                    value={formData.password}
-                    onChange={handleFormChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>تأكيد كلمة المرور *</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="أعد إدخال كلمة المرور"
-                    value={formData.confirmPassword}
-                    onChange={handleFormChange}
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn-register">
-                  إنشاء حساب
-                </button>
-              </form>
-            </div>
-          </main>
-          <footer className="footer">
-            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
-          </footer>
-        </div>
-      )}
+                ))}
+              </div>
 
-      {/* Dashboard Page */}
-      {currentPage === 'dashboard' && user && (
-        <div className="dashboard-page">
-          <header className="header dashboard-header">
-            <div className="header-left">
-              <h1>مرحباً، {user.fullName}</h1>
-              <p className="subtitle">حسابك في {user.projectName}</p>
+              {/* Title + Pulse */}
+              <motion.div
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="fixed top-12 left-1/2 -translate-x-1/2 text-7xl font-bold text-cyan-400"
+                style={{ textShadow: "0 0 60px #00f2ff, 0 0 120px #00f2ff" }}
+              >
+                SKYUNIT v9
+              </motion.div>
             </div>
-            <button className="btn-logout" onClick={handleLogout}>
-              تسجيل الخروج
-            </button>
-          </header>
-          <main className="main dashboard-main">
-            <div className="user-info-card">
-              <h2>بيانات الحساب</h2>
-              <div className="info-row">
-                <span className="label">الاسم:</span>
-                <span className="value">{user.fullName}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">البريد الإلكتروني:</span>
-                <span className="value">{user.email}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">رقم الهاتف:</span>
-                <span className="value">{user.phone}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">المنصة:</span>
-                <span className="value">{user.projectName}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">تاريخ الإنشاء:</span>
-                <span className="value">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</span>
-              </div>
-            </div>
-            <div className="features-card">
-              <h2>الميزات المتاحة</h2>
-              <ul className="features-list">
-                <li>✓ عرض جميع العقارات المتاحة في {user.projectName}</li>
-                <li>✓ الحجز المباشر للعقارات</li>
-                <li>✓ متابعة طلبات الحجز الخاصة بك</li>
-                <li>✓ الحصول على عروض حصرية</li>
-                <li>✓ التواصل المباشر مع المستشارين</li>
-              </ul>
-            </div>
-          </main>
-          <footer className="footer">
-            <p>© 2025 SkyUnit - منصة البحث الدقيق</p>
-          </footer>
-        </div>
-      )}
-    </div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+        body { margin: 0; font-family: 'Orbitron', sans-serif; }
+        canvas { touch-action: none; }
+      `}</style>
+    </>
   );
 }
-
-export default App;
