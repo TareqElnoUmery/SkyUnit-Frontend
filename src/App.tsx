@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 // Updated with Hero Section & AI Features
+
+/**
+ * ✨ HERO SECTION - تم إضافتها الآن 🎉
+ * Welcome to SkyUnit - The Intelligent Real Estate Platform
+ * منصة سكاي يونت الذكية للعقارات
+ */
 import PropertyCarousel from './PropertyCarousel';
 import './PropertyCarousel.css';
 import './index.css';
