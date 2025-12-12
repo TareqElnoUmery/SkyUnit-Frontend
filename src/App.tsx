@@ -1,18 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 
+// Type Definitions
+interface Property {
+  id: string;
+  unit_name: string;
+  description: string;
+  price: number;
+  [key: string]: any;
+}
+
+interface Booking {
+  id: string;
+  [key: string]: any;
+}
+
 // API Configuration
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://skyunit-api.railway.app';
 
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentSection, setCurrentSection] = useState('home');
-  const [hoveredCard, setHoveredCard] = useState(null);
-  const [properties, setProperties] = useState([]);
-  const [userBookings, setUserBookings] = useState([]);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [userCredit, setUserCredit] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState(localStorage.getItem('skyunit_token'));
 
   // Fetch properties on component mount
@@ -32,9 +46,10 @@ const App = () => {
       if (!response.ok) throw new Error('Failed to fetch properties');
       const data = await response.json();
       setProperties(data.units || []);
+      setError(null);
     } catch (err) {
       console.error('Error fetching properties:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -49,7 +64,7 @@ const App = () => {
       });
       if (!response.ok) throw new Error('Failed to fetch user profile');
       const data = await response.json();
-      setUserCredit(data.user.subscription_tier || 0);
+      setUserCredit(data.user?.subscription_tier || 0);
 
       // Fetch bookings
       const bookingsResponse = await fetch(`${API_BASE_URL}/api/bookings`, {
@@ -98,7 +113,6 @@ const App = () => {
 
         {/* Main */}
         <main className="max-w-7xl mx-auto px-6 py-20">
-          {/* Error message */}
           {error && <div className="bg-red-500/20 border border-red-500 p-4 rounded mb-6">{error}</div>}
 
           {currentSection === 'home' && (
@@ -133,7 +147,7 @@ const App = () => {
                 <div className="text-center py-12">Loading properties...</div>
               ) : properties.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-20">
-                  {properties.map((property) => (
+                  {properties.map((property: Property) => (
                     <div
                       key={property.id}
                       onMouseEnter={() => setHoveredCard(property.id)}
@@ -141,7 +155,7 @@ const App = () => {
                       className="p-8 rounded-xl border-2 border-gray-700 bg-gray-800/30 hover:border-cyan-500 hover:bg-cyan-500/10 transition-all duration-300 cursor-pointer"
                     >
                       <h3 className="text-xl font-bold mb-2">{property.unit_name || 'Property'}</h3>
-                      <p className="text-gray-400 mb-4">{property.description}</p>
+                      <p className="text-gray-400 mb-4">{property.description || 'No description'}</p>
                       <div className="flex justify-between items-center">
                         <span className="text-cyan-400 font-bold">${property.price || 'N/A'}</span>
                         <button className="bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded">View Details</button>
@@ -208,7 +222,7 @@ const App = () => {
         </footer>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
