@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// Updated with Hero Section & AI Features
 import PropertyCarousel from './PropertyCarousel';
 import './PropertyCarousel.css';
 import './index.css';
