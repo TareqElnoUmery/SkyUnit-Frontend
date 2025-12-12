@@ -1,14 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
 
+// API Configuration
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://skyunit-api.railway.app';
+
 const App = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentSection, setCurrentSection] = useState('home');
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [userBookings, setUserBookings] = useState([]);
+  const [userCredit, setUserCredit] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('skyunit_token'));
 
+  // Fetch properties on component mount
   useEffect(() => {
     setIsLoaded(true);
-  }, []);
+    fetchProperties();
+    if (token) {
+      fetchUserDashboard();
+    }
+  }, [token]);
+
+  // Fetch available properties
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/units`);
+      if (!response.ok) throw new Error('Failed to fetch properties');
+      const data = await response.json();
+      setProperties(data.units || []);
+    } catch (err) {
+      console.error('Error fetching properties:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch user dashboard data
+  const fetchUserDashboard = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch user profile');
+      const data = await response.json();
+      setUserCredit(data.user.subscription_tier || 0);
+
+      // Fetch bookings
+      const bookingsResponse = await fetch(`${API_BASE_URL}/api/bookings`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+        setUserBookings(bookingsData.bookings || []);
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard:', err);
+    }
+  };
 
   const features = [
     { id: 'ai', title: '🤖 AI Assistant', desc: 'Smart real estate companion', color: '#00f2ff' },
@@ -44,8 +98,27 @@ const App = () => {
 
         {/* Main */}
         <main className="max-w-7xl mx-auto px-6 py-20">
+          {/* Error message */}
+          {error && <div className="bg-red-500/20 border border-red-500 p-4 rounded mb-6">{error}</div>}
+
           {currentSection === 'home' && (
             <div className="space-y-12">
+              {/* Dashboard Section */}
+              <div className="grid grid-cols-3 gap-6 mb-12">
+                <div className="p-6 rounded-lg bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/30">
+                  <h3 className="text-gray-400 text-sm mb-2">Available Properties</h3>
+                  <p className="text-4xl font-bold text-cyan-400">{properties.length}</p>
+                </div>
+                <div className="p-6 rounded-lg bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/30">
+                  <h3 className="text-gray-400 text-sm mb-2">Your Bookings</h3>
+                  <p className="text-4xl font-bold text-purple-400">{userBookings.length}</p>
+                </div>
+                <div className="p-6 rounded-lg bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-cyan-500/30">
+                  <h3 className="text-gray-400 text-sm mb-2">Service Credits</h3>
+                  <p className="text-4xl font-bold text-green-400">{userCredit}</p>
+                </div>
+              </div>
+
               <div className="text-center space-y-6">
                 <h2 className="text-6xl font-bold">Welcome to <span className="text-cyan-400">SkyUnit</span></h2>
                 <p className="text-xl text-gray-400">The intelligent real estate platform</p>
@@ -54,6 +127,31 @@ const App = () => {
                   <button className="px-8 py-4 border-2 border-cyan-500 hover:bg-cyan-500/10 rounded-lg font-semibold">Learn More</button>
                 </div>
               </div>
+
+              {/* Properties Grid */}
+              {loading ? (
+                <div className="text-center py-12">Loading properties...</div>
+              ) : properties.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-20">
+                  {properties.map((property) => (
+                    <div
+                      key={property.id}
+                      onMouseEnter={() => setHoveredCard(property.id)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      className="p-8 rounded-xl border-2 border-gray-700 bg-gray-800/30 hover:border-cyan-500 hover:bg-cyan-500/10 transition-all duration-300 cursor-pointer"
+                    >
+                      <h3 className="text-xl font-bold mb-2">{property.unit_name || 'Property'}</h3>
+                      <p className="text-gray-400 mb-4">{property.description}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-cyan-400 font-bold">${property.price || 'N/A'}</span>
+                        <button className="bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded">View Details</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-400">No properties available at the moment</div>
+              )}
 
               {/* Features Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-20">
@@ -96,6 +194,7 @@ const App = () => {
                 <p>SkyUnit is revolutionizing the real estate industry with AI-powered intelligence.</p>
                 <p>We believe finding your perfect property should be easy, intuitive, and empowering.</p>
                 <p>Join thousands of satisfied users who have found their dream properties with SkyUnit.</p>
+                <p className="text-cyan-400 font-bold">Available Properties: {properties.length}</p>
               </div>
             </div>
           )}
